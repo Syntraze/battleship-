@@ -1,4 +1,5 @@
-import WebSocket from "ws";
+import type { WebSocket } from "ws";
+
 import { players, winners } from "../db/db";
 
 export function handleReg(

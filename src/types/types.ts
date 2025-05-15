@@ -1,3 +1,4 @@
+import type { WebSocket } from "ws";
 export interface WSMessage {
   type: string;
   data: any;

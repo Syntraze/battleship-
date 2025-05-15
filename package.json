@@ -13,12 +13,14 @@
     "keywords": [],
     "license": "ISC",
     "devDependencies": {
+        "@types/uuid": "^10.0.0",
         "@types/ws": "^8.18.1",
         "nodemon": "^2.0.16",
         "ts-node": "^10.9.2",
         "typescript": "^5.8.3"
     },
     "dependencies": {
+        "uuid": "^11.1.0",
         "ws": "^8.18.2"
     }
 }
