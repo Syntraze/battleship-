@@ -6,6 +6,7 @@ import { handleAddShips } from "../routes/handleAddShips";
 import { handleAddUserToRoom } from "../routes/handleAddUserToRoom";
 import { handleAttack } from "../routes/handleAttack";
 import { handleCreateRoom } from "../routes/handleCreateRoom";
+import { handleRandomAttack } from "../routes/handleRandomAttack";
 
 
 export function handleMessage(ws: WebSocket, msg: WSMessage) {
@@ -20,7 +21,8 @@ export function handleMessage(ws: WebSocket, msg: WSMessage) {
       return handleAddShips(ws, msg.data);
     case "attack":
       return handleAttack(ws, msg.data);
-
+    case "randomAttack":
+      return handleRandomAttack(ws, msg.data);
     default:
       console.warn("Unknown message type:", msg.type);
   }
