@@ -31,7 +31,7 @@ function broadcastRoomUpdate() {
     player.socket.send(
       JSON.stringify({
         type: "update_room",
-        data: roomList,
+        data: JSON.stringify(roomList),
         id: 0,
       })
     );

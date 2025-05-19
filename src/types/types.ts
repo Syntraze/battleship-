@@ -28,7 +28,9 @@ export interface Game {
   idGame: string;
   players: {
     [index: string]: {
+      ready: boolean;
       idPlayer: string;
+      name: string; // ✅ Add this line
       ships: Ship[];
       socket: WebSocket;
       board: string[][];

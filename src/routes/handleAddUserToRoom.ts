@@ -29,6 +29,8 @@ export function handleAddUserToRoom(
     players: {
       [player1.name]: {
         idPlayer: idPlayer1,
+        name: player1.name,
+        ready: false, // ✅ Added
         ships: [],
         socket: player1.socket,
         board: Array(10)
@@ -37,6 +39,8 @@ export function handleAddUserToRoom(
       },
       [player2.name]: {
         idPlayer: idPlayer2,
+        name: player2.name,
+        ready: false, // ✅ Added
         ships: [],
         socket: player2.socket,
         board: Array(10)
@@ -46,14 +50,16 @@ export function handleAddUserToRoom(
     },
     currentPlayer: player1.name,
   });
+  
+  
 
   // Notify both players
   const createGamePayload = (idPlayer: string) => ({
     type: "create_game",
-    data: {
+    data: JSON.stringify({
       idGame,
       idPlayer,
-    },
+    }),
     id: 0,
   });
 
@@ -78,7 +84,7 @@ function broadcastRoomUpdate() {
     player.socket.send(
       JSON.stringify({
         type: "update_room",
-        data: roomList,
+        data: JSON.stringify(roomList),
         id: 0,
       })
     );

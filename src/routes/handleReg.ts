@@ -29,12 +29,12 @@ export function handleReg(
   ws.send(
     JSON.stringify({
       type: "reg",
-      data: {
+      data:  JSON.stringify({
         name,
         index: name,
         error,
         errorText,
-      },
+      }),
       id: 0,
     })
   );

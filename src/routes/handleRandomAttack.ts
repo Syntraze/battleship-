@@ -41,9 +41,9 @@ export function handleRandomAttack(
 
   // Reuse attack logic
   handleAttack(ws, {
-    gameId: data.gameId,
+    gameId: JSON.stringify(data.gameId),
     x: target.x,
     y: target.y,
-    indexPlayer: data.indexPlayer,
+    indexPlayer: JSON.stringify(data.indexPlayer),
   });
 }

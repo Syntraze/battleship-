@@ -1,7 +1,6 @@
 import WebSocket from "ws";
 import { games, winners } from "../db/db";
 
-
 export function handleAttack(
   ws: WebSocket,
   data: {
@@ -22,16 +21,22 @@ export function handleAttack(
   );
   if (!attacker || !attackerName) return;
 
+  if (game.currentPlayer !== attackerName) {
+    console.warn("Not your turn! Attack rejected.");
+    return;
+  }
+
   const defenderName = Object.keys(game.players).find(
     (name) => name !== attackerName
   );
-  const defender = game.players[defenderName!];
+  if (!defenderName) return;
+  const defender = game.players[defenderName];
 
-  const cell = defender.board[data.y][data.x];
+  const cell = defender.board[data.y]?.[data.x];
+  if (cell === "hit" || cell === "miss") {
+    return; 
+  }
 
-  if (cell === "hit" || cell === "miss") return; // already attacked
-
-  // Check for ship at coordinates
   let hit = false;
   for (const ship of defender.ships) {
     const cells = getShipCells(ship);
@@ -45,10 +50,8 @@ export function handleAttack(
   }
 
   defender.board[data.y][data.x] = hit ? "hit" : "miss";
-
   const status = hit ? "shot" : "miss";
 
-  // Check if ship is killed
   let killed = false;
   if (hit) {
     for (const ship of defender.ships) {
@@ -57,53 +60,42 @@ export function handleAttack(
       if (allHit) {
         killed = true;
         for (const { x, y } of getSurroundingCells(cells)) {
-          if (defender.board[y]?.[x] === null) defender.board[y][x] = "miss";
+          if (defender.board[y]?.[x] === null) {
+            defender.board[y][x] = "miss";
+          }
         }
       }
     }
   }
 
-  // Send attack result to both players
   const result = {
     type: "attack",
-    data: {
+    data: JSON.stringify({
       position: { x: data.x, y: data.y },
       currentPlayer: attacker.idPlayer,
       status: killed ? "killed" : status,
-    },
+    }),
     id: 0,
   };
 
   attacker.socket.send(JSON.stringify(result));
   defender.socket.send(JSON.stringify(result));
 
-  // Check for win
   const defenderShipCells = defender.ships.flatMap(getShipCells);
   const allSunk = defenderShipCells.every(
     ({ x, y }) => defender.board[y][x] === "hit"
   );
 
   if (allSunk) {
-    attacker.socket.send(
-      JSON.stringify({
-        type: "finish",
-        data: { winPlayer: attacker.idPlayer },
-        id: 0,
-      })
-    );
+    const finishMsg = JSON.stringify({
+      type: "finish",
+      data: { winPlayer: attacker.idPlayer },
+      id: 0,
+    });
+    attacker.socket.send(finishMsg);
+    defender.socket.send(finishMsg);
 
-    defender.socket.send(
-      JSON.stringify({
-        type: "finish",
-        data: { winPlayer: attacker.idPlayer },
-        id: 0,
-      })
-    );
-
-    // Update winner table
     winners.set(attacker.name, (winners.get(attacker.name) || 0) + 1);
-
-    // Broadcast updated winner list
     const winnerList = Array.from(winners.entries()).map(([name, wins]) => ({
       name,
       wins,
@@ -117,24 +109,24 @@ export function handleAttack(
         })
       );
     }
-
     games.delete(data.gameId);
     return;
   }
 
-  // Turn logic
-  if (!hit || killed) {
-    game.currentPlayer = defenderName!;
+  if (!hit) {
+    game.currentPlayer = defenderName;
   }
 
+
+  const turnMsg = JSON.stringify({
+    type: "turn",
+    data: JSON.stringify({
+      currentPlayer: game.players[game.currentPlayer].idPlayer,
+    }),
+    id: 0,
+  });
   for (const p of Object.values(game.players)) {
-    p.socket.send(
-      JSON.stringify({
-        type: "turn",
-        data: { currentPlayer: game.players[game.currentPlayer].idPlayer },
-        id: 0,
-      })
-    );
+    p.socket.send(turnMsg);
   }
 }
 

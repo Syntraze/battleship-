@@ -30,10 +30,10 @@ export function handleAddShips(
       p.socket.send(
         JSON.stringify({
           type: "start_game",
-          data: {
+          data: JSON.stringify({
             ships: p.ships,
             currentPlayerIndex: game.players[game.currentPlayer].idPlayer,
-          },
+          }),
           id: 0,
         })
       );
